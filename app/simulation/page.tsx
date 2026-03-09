@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import dynamic from 'next/dynamic'
 import {
   generateSimulationData,
   generateFrequencySpectrum,
@@ -11,8 +10,6 @@ import {
   type VehicleCondition,
   type SimulationData,
 } from '@/lib/simulation'
-
-const Charts = dynamic(() => import('@/components/Charts'), { ssr: false })
 
 const MAX_HISTORY = 60
 

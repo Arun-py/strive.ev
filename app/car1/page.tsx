@@ -2,10 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import dynamic from 'next/dynamic';
 import { generateSimulationData, SimulationData } from '@/lib/simulation';
-
-const Charts = dynamic(() => import('@/components/Charts'), { ssr: false });
+import * as Charts from '@/components/Charts';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ESP32Data {
@@ -612,7 +610,7 @@ export default function Car1Dashboard() {
                   VIBRATION vs TIME (60s window)
                 </div>
                 <div className="chart-container">
-                  <Charts.VibrationChart data={vibrationChartData} />
+                  <Charts.VibrationChart labels={vibrationChartData.labels} datasets={vibrationChartData.datasets.map(d => ({ label: d.label, data: d.data, color: d.borderColor }))} />
                 </div>
               </div>
               <div className="glass-card p-4">
@@ -620,7 +618,7 @@ export default function Car1Dashboard() {
                   FFT FREQUENCY SPECTRUM
                 </div>
                 <div className="chart-container">
-                  {fftData && <Charts.FrequencyChart data={fftData} />}
+                  {fftData && <Charts.FrequencyChart labels={fftData.labels} data={fftData.datasets[0].data} />}
                 </div>
               </div>
               <div className="glass-card p-4 lg:col-span-2">
@@ -654,7 +652,7 @@ export default function Car1Dashboard() {
                   PIEZOELECTRIC ENERGY HARVESTED (mJ)
                 </div>
                 <div className="chart-container">
-                  <Charts.SingleLineChart data={energyChartData} label="Energy (mJ)" color="#00FFA6" />
+                  <Charts.SingleLineChart title="Energy (mJ)" labels={energyChartData.labels} data={energyChartData.datasets[0].data} color="#00FFA6" />
                 </div>
                 <div className="mt-2 text-xs font-mono text-gray-400">
                   P = V²/2R · V = d₃₃×F/Cₚ · d₃₃=580pC/N
@@ -665,7 +663,7 @@ export default function Car1Dashboard() {
                   BATTERY VOLTAGE MONITOR (V)
                 </div>
                 <div className="chart-container">
-                  <Charts.SingleLineChart data={battChartData} label="Battery (V)" color="#FF7A00" />
+                  <Charts.SingleLineChart title="Battery (V)" labels={battChartData.labels} data={battChartData.datasets[0].data} color="#FF7A00" />
                 </div>
                 <div className="mt-2 text-xs font-mono text-gray-400">
                   NdFeB N40 · Bᵣ=1.2T · COMSOL validated
