@@ -67,18 +67,23 @@ function injectFault(d: ESP32Data, fault: FaultMode): ESP32Data {
 }
 
 // ─── Simulate ESP32-style data from physics model ────────────────────────────
-function simToESP32(s: SimulationData): ESP32Data {
+// Battery state lives outside this function so it persists across calls.
+// Piezo formula: E = K * sqrt(v1² + v2² + v3² + v4²)  K=0.18  [mJ]
+//   Based on: V = d33 * F / Cp, P = V² / 2R, d33=580 pC/N, Cp=45 nF, R=220 kΩ
+function simToESP32(s: SimulationData, battOverride?: number): ESP32Data {
+  const v1 = s.vibration1, v2 = s.vibration2, v3 = s.vibration3, v4 = s.vibration4;
+  const piezo = 0.18 * Math.sqrt(v1 * v1 + v2 * v2 + v3 * v3 + v4 * v4);
   return {
     time: new Date().toISOString(),
-    vibration1: s.vibration1,
-    vibration2: s.vibration2,
-    vibration3: s.vibration3,
-    vibration4: s.vibration4,
+    vibration1: v1,
+    vibration2: v2,
+    vibration3: v3,
+    vibration4: v4,
     temperature: s.temperature,
     humidity: s.humidity,
     distance: s.distance,
-    battery_voltage: s.battery_voltage,
-    piezo_energy: s.energy_harvested,
+    battery_voltage: battOverride ?? s.battery_voltage,
+    piezo_energy: piezo,
   };
 }
 
