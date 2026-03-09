@@ -501,13 +501,31 @@ export default function Car1Dashboard() {
 
   // Chart data
   const timeLabels = history.slice(-60).map((_, i) => `${i}s`);
+
+  // 5-point moving average helper (simulates RPi FFT smoothing in JS)
+  const movingAvg = (arr: number[], n = 5) =>
+    arr.map((_, i) => {
+      const slice = arr.slice(Math.max(0, i - n + 1), i + 1);
+      return slice.reduce((a, b) => a + b, 0) / slice.length;
+    });
+
+  const raw60 = history.slice(-60);
+  const rawV1 = raw60.map(d => d.vibration1);
+  const rawV2 = raw60.map(d => d.vibration2);
+  const rawV3 = raw60.map(d => d.vibration3);
+  const rawV4 = raw60.map(d => d.vibration4);
+
   const vibrationChartData = {
     labels: timeLabels,
     datasets: [
-      { label: 'VIB-1 Motor', data: history.slice(-60).map(d => d.vibration1), borderColor: '#00FFA6', backgroundColor: '#00FFA610', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
-      { label: 'VIB-2 Wheel', data: history.slice(-60).map(d => d.vibration2), borderColor: '#FF7A00', backgroundColor: '#FF7A0010', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
-      { label: 'VIB-3 Susp',  data: history.slice(-60).map(d => d.vibration3), borderColor: '#A78BFA', backgroundColor: '#A78BFA10', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
-      { label: 'VIB-4 Batt',  data: history.slice(-60).map(d => d.vibration4), borderColor: '#60A5FA', backgroundColor: '#60A5FA10', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
+      // ── raw sensor readings ──
+      { label: 'RAW FL',         data: rawV1, color: '#00FFA6' },
+      { label: 'RAW FR',         data: rawV2, color: '#FF7A00' },
+      { label: 'RAW RL',         data: rawV3, color: '#A78BFA' },
+      { label: 'RAW RR',         data: rawV4, color: '#60A5FA' },
+      // ── processed (5-pt moving average — JS simulation of RPi FFT envelope) ──
+      { label: 'PROC FL (avg5)', data: movingAvg(rawV1), color: '#00FFA6', dash: true },
+      { label: 'PROC FR (avg5)', data: movingAvg(rawV2), color: '#FF7A00', dash: true },
     ],
   };
   const energyChartData = {
