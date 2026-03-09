@@ -54,9 +54,7 @@ BluetoothSerial SerialBT;
 #define ENA   25   // Left  motor speed PWM
 #define ENB   33   // Right motor speed PWM
 
-// PWM channels for LEDC
-#define PWM_CHAN_L   0
-#define PWM_CHAN_R   1
+// PWM config for LEDC (ESP32 Arduino core v3.x — no channel numbers needed)
 #define PWM_FREQ     1000
 #define PWM_RES      8
 
@@ -87,38 +85,38 @@ unsigned long lastSend = 0;
 void stopMotors() {
   digitalWrite(IN1, LOW); digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW); digitalWrite(IN4, LOW);
-  ledcWrite(PWM_CHAN_L, 0);
-  ledcWrite(PWM_CHAN_R, 0);
+  ledcWrite(ENA, 0);
+  ledcWrite(ENB, 0);
 }
 
 void moveForward() {
   digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);
   digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);
-  ledcWrite(PWM_CHAN_L, motorSpeed);
-  ledcWrite(PWM_CHAN_R, motorSpeed);
+  ledcWrite(ENA, motorSpeed);
+  ledcWrite(ENB, motorSpeed);
 }
 
 void moveBackward() {
   digitalWrite(IN1, LOW); digitalWrite(IN2, HIGH);
   digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);
-  ledcWrite(PWM_CHAN_L, motorSpeed);
-  ledcWrite(PWM_CHAN_R, motorSpeed);
+  ledcWrite(ENA, motorSpeed);
+  ledcWrite(ENB, motorSpeed);
 }
 
 void turnLeft() {
   // Pivot left: left motors backward, right forward
   digitalWrite(IN1, LOW);  digitalWrite(IN2, HIGH);
   digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);
-  ledcWrite(PWM_CHAN_L, motorSpeed);
-  ledcWrite(PWM_CHAN_R, motorSpeed);
+  ledcWrite(ENA, motorSpeed);
+  ledcWrite(ENB, motorSpeed);
 }
 
 void turnRight() {
   // Pivot right: left motors forward, right backward
   digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);  digitalWrite(IN4, HIGH);
-  ledcWrite(PWM_CHAN_L, motorSpeed);
-  ledcWrite(PWM_CHAN_R, motorSpeed);
+  ledcWrite(ENA, motorSpeed);
+  ledcWrite(ENB, motorSpeed);
 }
 
 void handleBTCommand(char cmd) {
@@ -202,10 +200,9 @@ void setup() {
   // ── Motor pins ──
   pinMode(IN1, OUTPUT); pinMode(IN2, OUTPUT);
   pinMode(IN3, OUTPUT); pinMode(IN4, OUTPUT);
-  ledcSetup(PWM_CHAN_L, PWM_FREQ, PWM_RES);
-  ledcSetup(PWM_CHAN_R, PWM_FREQ, PWM_RES);
-  ledcAttachPin(ENA, PWM_CHAN_L);
-  ledcAttachPin(ENB, PWM_CHAN_R);
+  // ESP32 Arduino core v3.x: ledcAttach(pin, freq, resolution) — no channel numbers
+  ledcAttach(ENA, PWM_FREQ, PWM_RES);
+  ledcAttach(ENB, PWM_FREQ, PWM_RES);
   stopMotors();
   Serial.println("✓ Motor driver ready");
 
