@@ -1,7 +1,10 @@
 import mongoose from 'mongoose'
 
-const MONGODB_URI = process.env.MONGODB_URI
-if (!MONGODB_URI) throw new Error('MONGODB_URI environment variable is not set')
+const MONGODB_URI: string = (() => {
+  const uri = process.env.MONGODB_URI
+  if (!uri) throw new Error('MONGODB_URI environment variable is not set')
+  return uri
+})()
 
 interface MongooseCache {
   conn: typeof mongoose | null
