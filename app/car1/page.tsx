@@ -761,11 +761,14 @@ export default function Car1Dashboard() {
             <motion.div key="vibration" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
               className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="glass-card p-4">
-                <div className="text-xs font-mono text-ev-green mb-3 uppercase tracking-widest">
-                  VIBRATION vs TIME (60s window)
+                <div className="text-xs font-mono text-ev-green mb-1 uppercase tracking-widest">
+                  VIBRATION vs TIME — FL · FR · RL · RR (60s window)
+                </div>
+                <div className="text-xs font-mono text-gray-500 mb-3">
+                  Solid = raw ADC · Faded = 5-pt moving average (RPi FFT envelope simulated in JS)
                 </div>
                 <div className="chart-container">
-                  <Charts.VibrationChart labels={vibrationChartData.labels} datasets={vibrationChartData.datasets.map(d => ({ label: d.label, data: d.data, color: d.borderColor }))} />
+                  <Charts.VibrationChart labels={vibrationChartData.labels} datasets={vibrationChartData.datasets.map(d => ({ label: d.label, data: d.data, color: d.color }))} />
                 </div>
               </div>
               <div className="glass-card p-4">
