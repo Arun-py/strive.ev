@@ -1,0 +1,271 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --space-blue: #0B1D3A;
+  --electric-green: #00FFA6;
+  --orange-accent: #FF7A00;
+  --dark-nav: #060F1F;
+  --card-bg: #0D2347;
+  --card-border: #1A3A5C;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: linear-gradient(135deg, #060F1F 0%, #0B1D3A 50%, #071428 100%);
+  color: #E0E8F0;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B1D3A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00FFA6;
+  border-radius: 3px;
+}
+
+/* Glow utilities */
+.glow-green {
+  box-shadow: 0 0 10px #00FFA655, 0 0 30px #00FFA620;
+  border-color: #00FFA6 !important;
+}
+
+.glow-orange {
+  box-shadow: 0 0 10px #FF7A0055, 0 0 30px #FF7A0020;
+  border-color: #FF7A00 !important;
+}
+
+.glow-text-green {
+  text-shadow: 0 0 10px #00FFA6, 0 0 20px #00FFA660;
+}
+
+.glow-text-orange {
+  text-shadow: 0 0 10px #FF7A00, 0 0 20px #FF7A0060;
+}
+
+/* Glassmorphism card */
+.glass-card {
+  background: rgba(13, 35, 71, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 255, 166, 0.15);
+  border-radius: 12px;
+}
+
+.glass-card-orange {
+  background: rgba(13, 35, 71, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 122, 0, 0.2);
+  border-radius: 12px;
+}
+
+/* Neon border animation */
+@keyframes neonPulse {
+  0%, 100% { border-color: rgba(0, 255, 166, 0.2); box-shadow: 0 0 5px rgba(0, 255, 166, 0.1); }
+  50% { border-color: rgba(0, 255, 166, 0.8); box-shadow: 0 0 20px rgba(0, 255, 166, 0.4); }
+}
+
+.neon-border {
+  animation: neonPulse 3s ease-in-out infinite;
+}
+
+/* Vibration wave bar */
+@keyframes waveBar {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+
+.wave-bar {
+  display: inline-block;
+  width: 4px;
+  height: 24px;
+  background: #00FFA6;
+  border-radius: 2px;
+  margin: 0 2px;
+  transform-origin: bottom;
+  animation: waveBar 0.8s ease-in-out infinite;
+}
+
+.wave-bar:nth-child(2) { animation-delay: 0.1s; }
+.wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.wave-bar:nth-child(4) { animation-delay: 0.3s; }
+.wave-bar:nth-child(5) { animation-delay: 0.4s; }
+.wave-bar:nth-child(6) { animation-delay: 0.3s; }
+.wave-bar:nth-child(7) { animation-delay: 0.2s; }
+.wave-bar:nth-child(8) { animation-delay: 0.1s; }
+
+/* Particle dot */
+@keyframes floatParticle {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+}
+
+.particle {
+  position: fixed;
+  width: 2px;
+  height: 2px;
+  background: #00FFA6;
+  border-radius: 50%;
+  animation: floatParticle linear infinite;
+}
+
+/* Flow arrow */
+@keyframes flowDown {
+  0% { opacity: 0; transform: translateY(-5px); }
+  50% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(10px); }
+}
+
+.flow-arrow {
+  animation: flowDown 1.5s ease-in-out infinite;
+}
+
+/* Status indicators */
+.status-normal { color: #00FFA6; }
+.status-warning { color: #FFD600; }
+.status-critical { color: #FF3B3B; }
+
+.status-dot-normal { background: #00FFA6; box-shadow: 0 0 8px #00FFA6; }
+.status-dot-warning { background: #FFD600; box-shadow: 0 0 8px #FFD600; }
+.status-dot-critical { background: #FF3B3B; box-shadow: 0 0 8px #FF3B3B; }
+
+/* Scan line effect */
+@keyframes scanLine {
+  0% { top: 0%; }
+  100% { top: 100%; }
+}
+
+.scan-line::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00FFA640, transparent);
+  animation: scanLine 3s linear infinite;
+  pointer-events: none;
+}
+
+/* Data flow animation for system diagram */
+@keyframes dataFlowDown {
+  0% { height: 0; opacity: 1; }
+  100% { height: 100%; opacity: 0.3; }
+}
+
+/* Heading styles */
+.heading-orbitron {
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.heading-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Table styles */
+.research-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.research-table th {
+  background: rgba(0, 255, 166, 0.1);
+  color: #00FFA6;
+  padding: 10px 14px;
+  text-align: left;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(0, 255, 166, 0.2);
+}
+
+.research-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.875rem;
+  color: #C0D0E0;
+}
+
+.research-table tr:hover td {
+  background: rgba(0, 255, 166, 0.03);
+}
+
+/* Chart container */
+.chart-container {
+  position: relative;
+  background: rgba(6, 15, 31, 0.8);
+  border: 1px solid rgba(0, 255, 166, 0.15);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+/* Login card hover */
+.login-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.login-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(0, 255, 166, 0.15);
+}
+
+/* Dashboard panel */
+.dashboard-panel {
+  background: rgba(6, 15, 31, 0.9);
+  border: 1px solid rgba(0, 255, 166, 0.1);
+  border-radius: 10px;
+}
+
+/* Fault button */
+.fault-btn {
+  background: rgba(255, 59, 59, 0.1);
+  border: 1px solid rgba(255, 59, 59, 0.3);
+  color: #FF3B3B;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fault-btn:hover, .fault-btn.active {
+  background: rgba(255, 59, 59, 0.25);
+  box-shadow: 0 0 15px rgba(255, 59, 59, 0.3);
+}
+
+.fault-btn.fault-warning {
+  background: rgba(255, 214, 0, 0.1);
+  border-color: rgba(255, 214, 0, 0.3);
+  color: #FFD600;
+}
+
+.fault-btn.fault-warning:hover {
+  background: rgba(255, 214, 0, 0.25);
+  box-shadow: 0 0 15px rgba(255, 214, 0, 0.3);
+}
