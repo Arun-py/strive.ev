@@ -171,74 +171,154 @@ function VibrationBar({ label, value, max = 8 }: { label: string; value: number;
   );
 }
 
+// ─── Battery Capacity Gauge ───────────────────────────────────────────────────
+function BatteryCapacityGauge({
+  voltage, isCharging,
+}: { voltage: number; isCharging: boolean }) {
+  // Map 9 V → 0 %, 12.6 V → 100 %
+  const pct = Math.max(0, Math.min(100, ((voltage - 9) / 3.6) * 100));
+  const color = pct < 20 ? '#FF4444' : pct < 45 ? '#FF7A00' : '#00FFA6';
+  const circumference = 2 * Math.PI * 38;
+  const dashOffset = circumference * (1 - pct / 100);
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="38" fill="none" stroke="#1a2a1a" strokeWidth="8" />
+        <circle cx="50" cy="50" r="38" fill="none"
+          stroke={color} strokeWidth="8"
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+          strokeLinecap="round"
+          transform="rotate(-90 50 50)"
+          style={{ transition: 'stroke-dashoffset 0.6s ease, stroke 0.4s ease' }}
+        />
+        <text x="50" y="44" textAnchor="middle" fill={color}
+          fontSize="14" fontFamily="monospace" fontWeight="bold">{pct.toFixed(0)}%</text>
+        <text x="50" y="56" textAnchor="middle" fill="#888"
+          fontSize="7" fontFamily="monospace">{voltage.toFixed(2)}V</text>
+        {isCharging && (
+          <text x="50" y="68" textAnchor="middle" fill="#FFD700"
+            fontSize="9" fontFamily="monospace">⚡ CHG</text>
+        )}
+      </svg>
+      <div className="text-xs font-mono text-gray-400 uppercase tracking-widest">BATT CAPACITY</div>
+    </div>
+  );
+}
+
 // ─── EV Chassis Live Stress Overlay ──────────────────────────────────────────
-function ChassisLiveView({ fault, data }: { fault: FaultMode; data: ESP32Data | null }) {
+// Sensor layout (matches L298N motor corners):
+//   VIB1 = Front-Left   VIB2 = Front-Right
+//   VIB3 = Rear-Left    VIB4 = Rear-Right
+function ChassisLiveView({
+  fault, data, isCharging,
+}: { fault: FaultMode; data: ESP32Data | null; isCharging?: boolean }) {
   if (!data) return null;
   const maxVib = Math.max(data.vibration1, data.vibration2, data.vibration3, data.vibration4);
   const stress = Math.min(maxVib / 8, 1);
 
-  const zones = [
-    { id: 'front', label: 'F-AXLE', x: 340, y: 80, r: 32, vib: data.vibration1, affected: fault === 'MOTOR_IMBALANCE' },
-    { id: 'rear',  label: 'R-AXLE', x: 100, y: 80, r: 32, vib: data.vibration2, affected: fault === 'SUSPENSION_FAULT' },
-    { id: 'susp',  label: 'SUSP',   x: 220, y: 115, r: 28, vib: data.vibration3, affected: fault === 'SUSPENSION_FAULT' },
-    { id: 'batt',  label: 'BATT',   x: 220, y: 50, r: 28, vib: data.vibration4, affected: fault === 'BATTERY_LOOSE' },
+  // [id, label, cx, cy, radius, vib value, fault affected?]
+  const zones: [string, string, number, number, number, number, boolean][] = [
+    ['fl', 'FL', 110, 60,  26, data.vibration1, fault === 'MOTOR_IMBALANCE'],
+    ['fr', 'FR', 330, 60,  26, data.vibration2, fault === 'MOTOR_IMBALANCE'],
+    ['rl', 'RL', 110, 130, 26, data.vibration3, fault === 'SUSPENSION_FAULT'],
+    ['rr', 'RR', 330, 130, 26, data.vibration4, fault === 'SUSPENSION_FAULT' || fault === 'BATTERY_LOOSE'],
   ];
+
+  const battPct = Math.max(0, Math.min(1, (data.battery_voltage - 9) / 3.6));
+  const battW   = Math.max(0, battPct * 100);
+  const battCol = data.battery_voltage < 11 ? '#FF4444' : data.battery_voltage < 12 ? '#FF7A00' : '#00FFA6';
 
   return (
     <div className="glass-card p-4">
-      <div className="text-xs font-mono text-ev-green mb-3 uppercase tracking-widest">
-        ◉ LIVE CHASSIS STRESS MAP
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-xs font-mono text-ev-green uppercase tracking-widest">
+          ◉ LIVE CHASSIS STRESS MAP
+        </div>
+        <BatteryCapacityGauge voltage={data.battery_voltage} isCharging={!!isCharging} />
       </div>
-      <svg viewBox="0 0 460 160" className="w-full" style={{ maxHeight: 160 }}>
-        {/* chassis body */}
-        <rect x="60" y="30" width="340" height="100" rx="18" ry="18"
-          fill="none" stroke="#00FFA622" strokeWidth="1.5" />
-        <rect x="80" y="45" width="300" height="70" rx="10" ry="10"
-          fill={`rgba(0,255,166,${0.02 + stress * 0.06})`} stroke="#00FFA633" strokeWidth="1" />
+      <svg viewBox="0 0 460 200" className="w-full" style={{ maxHeight: 200 }}>
 
-        {/* chassis crack overlay */}
+        {/* ── FRONT / REAR direction labels ── */}
+        <text x="8" y="68"  fill="#00FFA688" fontSize="8" fontFamily="monospace" fontWeight="bold">FRONT</text>
+        <text x="8" y="138" fill="#00FFA688" fontSize="8" fontFamily="monospace" fontWeight="bold">REAR</text>
+        <line x1="6" y1="72"  x2="6" y2="128" stroke="#00FFA633" strokeWidth="1" />
+        <polygon points="6,72 3,80 9,80" fill="#00FFA644" />
+
+        {/* ── chassis body ── */}
+        <rect x="60"  y="30"  width="340" height="145" rx="22" ry="22"
+          fill="none" stroke="#00FFA622" strokeWidth="1.5" />
+        <rect x="80"  y="48"  width="300" height="109" rx="12" ry="12"
+          fill={`rgba(0,255,166,${0.02 + stress * 0.06})`}
+          stroke="#00FFA633" strokeWidth="1" />
+
+        {/* ── axle lines ── */}
+        <line x1="80"  y1="60"  x2="220" y2="60"  stroke="#00FFA618" strokeWidth="1.5" strokeDasharray="4 3" />
+        <line x1="220" y1="60"  x2="370" y2="60"  stroke="#00FFA618" strokeWidth="1.5" strokeDasharray="4 3" />
+        <line x1="80"  y1="130" x2="370" y2="130" stroke="#00FFA618" strokeWidth="1.5" strokeDasharray="4 3" />
+
+        {/* ── chassis crack overlay ── */}
         {fault === 'CHASSIS_CRACK' && (
-          <motion.path d="M 160 45 L 200 115" stroke="#FF4444" strokeWidth="2.5"
+          <motion.path d="M 175 48 L 210 157" stroke="#FF4444" strokeWidth="2.5"
             strokeDasharray="4 3" opacity="0.9"
-            animate={{ opacity: [0.9, 0.3, 0.9] }} transition={{ duration: 0.6, repeat: Infinity }} />
+            animate={{ opacity: [0.9, 0.3, 0.9] }}
+            transition={{ duration: 0.6, repeat: Infinity }} />
         )}
 
-        {/* stress zones */}
-        {zones.map(z => {
-          const pct = Math.min(z.vib / 8, 1);
-          const color = z.affected ? '#FF4444' : pct > 0.5 ? '#FF7A00' : '#00FFA6';
+        {/* ── battery bar (center spine) ── */}
+        <rect x="170" y="84"  width="120" height="16" rx="4" fill="#00FFA610" stroke="#00FFA633" strokeWidth="1" />
+        <rect x="172" y="86"  width={battW} height="12"     rx="3" fill={battCol} opacity="0.75"
+          style={{ transition: 'width 0.6s ease' }} />
+        <text x="230" y="96" textAnchor="middle" fill="#ccc" fontSize="7" fontFamily="monospace">
+          {data.battery_voltage.toFixed(2)} V  {(battPct * 100).toFixed(0)}%
+        </text>
+        {isCharging && (
+          <text x="228" y="79" textAnchor="middle" fill="#FFD700" fontSize="8" fontFamily="monospace">⚡</text>
+        )}
+
+        {/* ── sensor zones ── */}
+        {zones.map(([id, label, cx, cy, r, vib, affected]) => {
+          const pct   = Math.min(vib / 8, 1);
+          const color = affected ? '#FF4444' : pct > 0.625 ? '#FF4444' : pct > 0.375 ? '#FF7A00' : '#00FFA6';
           return (
-            <g key={z.id}>
-              <motion.circle cx={z.x} cy={z.y} r={z.r}
-                fill={`${color}18`} stroke={color} strokeWidth="1.5"
-                animate={{ r: [z.r, z.r + pct * 6, z.r] }}
-                transition={{ duration: 0.4 + Math.random() * 0.3, repeat: Infinity }} />
-              <text x={z.x} y={z.y - 2} textAnchor="middle"
-                fill={color} fontSize="7" fontFamily="monospace" fontWeight="bold">
-                {z.label}
+            <g key={id}>
+              {/* pulsing ring */}
+              <motion.circle cx={cx} cy={cy} r={r}
+                fill={`${color}18`} stroke={color} strokeWidth="1.8"
+                animate={{ r: [r, r + pct * 8, r] }}
+                transition={{ duration: 0.5, repeat: Infinity, ease: 'easeInOut' }} />
+              {/* sensor label (FL / FR / RL / RR) */}
+              <text x={cx} y={cy - 4} textAnchor="middle"
+                fill={color} fontSize="9" fontFamily="monospace" fontWeight="bold">
+                {label}
               </text>
-              <text x={z.x} y={z.y + 9} textAnchor="middle"
-                fill={color} fontSize="7" fontFamily="monospace">
-                {z.vib.toFixed(2)}g
+              {/* g-value */}
+              <text x={cx} y={cy + 8} textAnchor="middle"
+                fill={color} fontSize="7.5" fontFamily="monospace">
+                {vib.toFixed(2)}g
               </text>
+              {/* corner wheel rectangle */}
+              <rect x={cx - r - 8} y={cy - 6} width="8" height="12" rx="2"
+                fill={`${color}30`} stroke={color} strokeWidth="1" />
+              <rect x={cx + r}     y={cy - 6} width="8" height="12" rx="2"
+                fill={`${color}30`} stroke={color} strokeWidth="1" />
             </g>
           );
         })}
 
-        {/* battery indicator */}
-        <rect x="180" y="38" width="100" height="18" rx="3" fill="#00FFA610" stroke="#00FFA633" strokeWidth="1" />
-        <rect x="182" y="40" width={Math.max(0, (data.battery_voltage - 9) / 5 * 96)} height="14" rx="2"
-          fill={data.battery_voltage < 11 ? '#FF4444' : data.battery_voltage < 12 ? '#FF7A00' : '#00FFA6'} opacity="0.7" />
-        <text x="230" y="51" textAnchor="middle" fill="#aaa" fontSize="7" fontFamily="monospace">
-          BATT {data.battery_voltage.toFixed(1)}V
-        </text>
-
-        {/* temp readout */}
-        <text x="420" y="90" textAnchor="end" fill={data.temperature > 38 ? '#FF4444' : '#00FFA6'}
+        {/* ── temp readout ── */}
+        <text x="452" y="100" textAnchor="end"
+          fill={data.temperature > 38 ? '#FF4444' : '#00FFA6'}
           fontSize="9" fontFamily="monospace">
           {data.temperature.toFixed(1)}°C
         </text>
-        <text x="420" y="100" textAnchor="end" fill="#666" fontSize="7" fontFamily="monospace">TEMP</text>
+        <text x="452" y="110" textAnchor="end" fill="#666" fontSize="7" fontFamily="monospace">TEMP</text>
+
+        {/* ── corner wheel outlines ── */}
+        {([[80,48],[370,48],[80,148],[370,148]] as [number,number][]).map(([wx,wy],i) => (
+          <rect key={i} x={wx-14} y={wy-12} width="14" height="24" rx="4"
+            fill="#ffffff08" stroke="#00FFA622" strokeWidth="1" />
+        ))}
       </svg>
     </div>
   );
