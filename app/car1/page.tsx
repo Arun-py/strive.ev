@@ -685,10 +685,10 @@ export default function Car1Dashboard() {
                   〰 VIBRATION SENSORS (g)
                 </div>
                 {data && <>
-                  <VibrationBar label="VIB-1 Motor Mount" value={data.vibration1} />
-                  <VibrationBar label="VIB-2 Wheel Hub"   value={data.vibration2} />
-                  <VibrationBar label="VIB-3 Suspension"  value={data.vibration3} />
-                  <VibrationBar label="VIB-4 Battery Tray" value={data.vibration4} />
+                  <VibrationBar label="FL — Front-Left  (Motor)"  value={data.vibration1} />
+                  <VibrationBar label="FR — Front-Right (Wheel)"  value={data.vibration2} />
+                  <VibrationBar label="RL — Rear-Left   (Susp.)"  value={data.vibration3} />
+                  <VibrationBar label="RR — Rear-Right  (Batt.)"  value={data.vibration4} />
                 </>}
                 <div className="pt-2 border-t border-gray-700 text-xs font-mono text-gray-500">
                   d₃₃=580 pC/N · Cₚ=45nF · Source: PDT Lab / ISRO IPRC
@@ -697,7 +697,7 @@ export default function Car1Dashboard() {
 
               {/* Chassis view */}
               <div className="lg:col-span-2">
-                <ChassisLiveView fault={activeFault} data={data} />
+                <ChassisLiveView fault={activeFault} data={data} isCharging={isCharging} />
                 {/* env sensors grid */}
                 {data && (
                   <div className="grid grid-cols-3 gap-3 mt-3">
