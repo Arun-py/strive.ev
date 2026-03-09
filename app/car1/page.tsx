@@ -519,13 +519,13 @@ export default function Car1Dashboard() {
     labels: timeLabels,
     datasets: [
       // ── raw sensor readings ──
-      { label: 'RAW FL',         data: rawV1, color: '#00FFA6' },
-      { label: 'RAW FR',         data: rawV2, color: '#FF7A00' },
-      { label: 'RAW RL',         data: rawV3, color: '#A78BFA' },
-      { label: 'RAW RR',         data: rawV4, color: '#60A5FA' },
-      // ── processed (5-pt moving average — JS simulation of RPi FFT envelope) ──
-      { label: 'PROC FL (avg5)', data: movingAvg(rawV1), color: '#00FFA6', dash: true },
-      { label: 'PROC FR (avg5)', data: movingAvg(rawV2), color: '#FF7A00', dash: true },
+      { label: 'RAW FL (Front-Left)',  data: rawV1, color: '#00FFA6' },
+      { label: 'RAW FR (Front-Right)', data: rawV2, color: '#FF7A00' },
+      { label: 'RAW RL (Rear-Left)',   data: rawV3, color: '#A78BFA' },
+      { label: 'RAW RR (Rear-Right)',  data: rawV4, color: '#60A5FA' },
+      // ── processed: 5-pt moving average (simulates RPi FFT envelope in JS) ──
+      { label: 'PROC FL avg5',         data: movingAvg(rawV1), color: '#00665544' },
+      { label: 'PROC FR avg5',         data: movingAvg(rawV2), color: '#66330044' },
     ],
   };
   const energyChartData = {
