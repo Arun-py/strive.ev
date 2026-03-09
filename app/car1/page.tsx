@@ -370,6 +370,8 @@ export default function Car1Dashboard() {
   const [uptime, setUptime] = useState(0);
   const [totalEnergy, setTotalEnergy] = useState(0);
   const [dataPoints, setDataPoints] = useState(0);
+  const [isCharging, setIsCharging] = useState(false);
+  const battRef = useRef<number>(12.1);  // simulation battery voltage (persists across ticks)
   const alertIdRef = useRef(0);
   const wsRef = useRef<WebSocket | null>(null);
   const prevFaultRef = useRef<FaultMode>('NONE');
@@ -457,8 +459,12 @@ export default function Car1Dashboard() {
   }, [activeFault, addAlert]);
 
   // Simulation fallback — runs when WebSocket is not connected
+  // Battery model: degrades 0.1 V over 600 ticks (10 min) at 1 Hz
+  //   Charging: if avgVib > 3.5g then piezo current charges battery slightly
   useEffect(() => {
     if (wsConnected) return;
+    const DEGRADE_RATE = 0.1 / 600;   // V per tick
+    const CHARGE_RATE  = 0.0005;       // V per tick when charging
     const id = setInterval(() => {
       const sim = generateSimulationData(
         activeFault === 'NONE' ? 'NORMAL' :
@@ -466,7 +472,15 @@ export default function Car1Dashboard() {
         activeFault === 'SUSPENSION_FAULT' ? 'SUSPENSION_FAULT' :
         activeFault === 'CHASSIS_CRACK' ? 'CHASSIS_CRACK' : 'BATTERY_LOOSE'
       );
-      const d = injectFault(simToESP32(sim), activeFault);
+      const avgVib = (sim.vibration1 + sim.vibration2 + sim.vibration3 + sim.vibration4) / 4;
+      const charging = avgVib > 3.5;
+      setIsCharging(charging);
+      if (charging) {
+        battRef.current = Math.min(12.1, battRef.current + CHARGE_RATE);
+      } else {
+        battRef.current = Math.max(11.8, battRef.current - DEGRADE_RATE);
+      }
+      const d = injectFault(simToESP32(sim, battRef.current), activeFault);
       processNewData(d);
     }, 1000);
     return () => clearInterval(id);
