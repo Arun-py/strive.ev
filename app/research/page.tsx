@@ -131,7 +131,7 @@ export default function ResearchPage() {
       id: 'R2',
       authors: 'Farrar, C.R., Worden, K.',
       year: '2013',
-      title: 'Structural Health Monitoring: A Machine Learning Perspective',
+      title: 'Structural Health Analysis: A Machine Learning Perspective',
       journal: 'Wiley-Blackwell, ISBN: 978-1-119-99433-6',
       relevance: 'Foundation for STRIVE-EV SHM methodology. Defines SHM levels 1–4: existence, location, severity, and prognosis of damage. Modal analysis framework using frequency shift analysis.',
       keyFindings: [
@@ -164,7 +164,7 @@ export default function ResearchPage() {
       id: 'R4',
       authors: 'Omidi, M.M.',
       year: '2023',
-      title: 'Vibration-based Structural Health Monitoring by using Machine Learning',
+      title: 'Vibration-based Structural Health Assessment by using Machine Learning',
       journal: 'MSc Thesis, Politecnico di Milano (Dept. Civil & Environmental Engineering)',
       relevance: 'Primary SHM reference for STRIVE-EV. Uses Autoencoder for noise removal, Gaussian Mixture Model (GMM) for clustering, Particle Swarm Optimization (PSO) for FE model calibration. Validated on Z24 and KW51 bridges; frequency shift from temperature and damage distinguished.',
       keyFindings: [
@@ -222,8 +222,8 @@ export default function ResearchPage() {
         'Gain variants: 0.1, 0.5, 1.0 — each 2 units (total 6 converters)',
         'IEPE standard compliance required for output voltage range',
         'High-impedance input → low-impedance output conversion essential',
-        'Applications: dynamic/acoustic pressure, vehicle vibration monitoring',
-        'Compatible with PSLV, GSLV, LVM3, NGLV vibration monitoring systems',
+        'Applications: dynamic/acoustic pressure, vehicle vibration diagnostics',
+        'Compatible with PSLV, GSLV, LVM3, NGLV vibration analysis systems',
         'High temperature robustness required for cryogenic rocket environment'
       ],
       color: '#FF7A00',
@@ -253,7 +253,7 @@ export default function ResearchPage() {
         </h1>
         <p className="text-[#6080A0] text-sm font-inter leading-relaxed">
           The theoretical and experimental foundations of STRIVE-EV — piezoelectric energy harvesting,
-          vibration-based structural health monitoring, and charge-to-voltage signal conditioning.
+          vibration-based structural health diagnostics, and charge-to-voltage signal conditioning.
         </p>
       </motion.div>
 
@@ -282,7 +282,7 @@ export default function ResearchPage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <SectionHeader
               number="01"
-              title="Structural Health Monitoring Theory"
+              title="Structural Health Analysis Theory"
               subtitle="Vibration-based damage detection using frequency shift analysis and modal analysis"
             />
 

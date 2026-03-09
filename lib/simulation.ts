@@ -504,3 +504,133 @@ export const vehicleConditions: { value: VehicleCondition; label: string; color:
   { value: 'BATTERY_LOOSE', label: 'Battery Mount Loose', color: '#FFD600' },
   { value: 'AIRBAG_ERROR', label: 'Airbag / Impact Event', color: '#FF3B3B' },
 ]
+
+// ─── IEPE Standard Gain Stages ───────────────────────────────────────────────
+// Per IEC 61672 / ISO 5348 IEPE (Integrated Electronics PiezoElectric) standard
+// Charge amplifier feedback capacitor sets gain: V_out = Q / C_f
+
+export interface IEPEGainSpec {
+  gain: number                  // multiplier: 1, 10, 100
+  label: string                 // display label
+  sensitivity_mV_g: number      // mV per g  (g = 9.81 m/s²)
+  sensitivity_mV_ms2: number    // mV per m/s²
+  range_g: number               // ±g full-scale range
+  range_ms2: number             // ±m/s² full-scale range
+  noise_floor_ug_rthz: number   // µg/√Hz noise spectral density
+  resolution_mg: number         // mg (milli-g) minimum detectable
+  freq_lo_hz: number            // lower -3 dB cut-off Hz
+  freq_hi_khz: number           // upper -3 dB cut-off kHz
+  supply_current_mA: number     // constant current excitation mA
+  bias_voltage_V: number        // DC bias voltage at output V
+  output_impedance_ohm: number  // output impedance Ω
+  dynamic_range_dB: number      // dynamic range dB
+  cf_pF: number                 // feedback capacitor pF (charge amp)
+  rf_GOhm: number               // feedback resistor GΩ  (charge amp)
+  typical_use: string           // application note
+}
+
+export const IEPE_GAIN_STAGES: IEPEGainSpec[] = [
+  {
+    gain: 1,
+    label: '×1  (High-Range / Shock)',
+    sensitivity_mV_g:    1.0,
+    sensitivity_mV_ms2:  0.102,
+    range_g:             500,
+    range_ms2:           4905,
+    noise_floor_ug_rthz: 150,
+    resolution_mg:       0.50,
+    freq_lo_hz:          1.0,
+    freq_hi_khz:         10.0,
+    supply_current_mA:   4.0,
+    bias_voltage_V:      12.0,
+    output_impedance_ohm: 100,
+    dynamic_range_dB:    80,
+    cf_pF:               100,
+    rf_GOhm:             10,
+    typical_use: 'High-shock, drop/crash events, turbine blades',
+  },
+  {
+    gain: 10,
+    label: '×10  (Mid-Range / General)',
+    sensitivity_mV_g:    10.0,
+    sensitivity_mV_ms2:  1.019,
+    range_g:             50,
+    range_ms2:           490.5,
+    noise_floor_ug_rthz: 15,
+    resolution_mg:       0.05,
+    freq_lo_hz:          0.5,
+    freq_hi_khz:         8.0,
+    supply_current_mA:   4.0,
+    bias_voltage_V:      12.0,
+    output_impedance_ohm: 100,
+    dynamic_range_dB:    80,
+    cf_pF:               10,
+    rf_GOhm:             10,
+    typical_use: 'General vehicle NVH, motor mounts, chassis (EV primary range)',
+  },
+  {
+    gain: 100,
+    label: '×100  (High-Sensitivity / Low-Level)',
+    sensitivity_mV_g:    100.0,
+    sensitivity_mV_ms2:  10.19,
+    range_g:             5,
+    range_ms2:           49.05,
+    noise_floor_ug_rthz: 1.5,
+    resolution_mg:       0.005,
+    freq_lo_hz:          0.1,
+    freq_hi_khz:         5.0,
+    supply_current_mA:   4.0,
+    bias_voltage_V:      12.0,
+    output_impedance_ohm: 100,
+    dynamic_range_dB:    80,
+    cf_pF:               1,
+    rf_GOhm:             10,
+    typical_use: 'Low-level structural, tyre noise, battery pack micro-vibration',
+  },
+]
+
+/** Compute live IEPE output quantities for a single acceleration reading */
+export interface IEPELiveReading {
+  spec: IEPEGainSpec
+  accel_ms2: number           // input acceleration m/s²
+  accel_g: number             // in g
+  output_mV: number           // output voltage mV
+  output_V: number            // output voltage V (= bias ± signal)
+  saturation_pct: number      // % of full-scale range used
+  in_range: boolean           // true if within ±range
+  snr_dB: number              // estimated SNR dB at this reading
+  charge_pC: number           // charge at sensor output pC (Q = m·d33·a)
+}
+
+export function computeIEPEReadings(
+  accel_ms2: number,
+  pzt_d33_pCperN: number = 580,
+  sensor_mass_g: number = 15,   // typical IEPE accelerometer seismic mass
+): IEPELiveReading[] {
+  const a = Math.abs(accel_ms2)
+  const a_g = a / 9.81
+  const charge_pC = pzt_d33_pCperN * (sensor_mass_g / 1000) * a   // Q = d33 × F = d33 × m × a
+
+  return IEPE_GAIN_STAGES.map(spec => {
+    const output_mV = spec.sensitivity_mV_ms2 * accel_ms2   // signed
+    const saturation_pct = Math.min(100, (a / spec.range_ms2) * 100)
+    const in_range = a <= spec.range_ms2
+    // SNR = 20·log10(signal / noise)
+    // noise_floor in µg/√Hz, assume 1 kHz BW → RMS noise ≈ noise_floor × √BW
+    const bw = spec.freq_hi_khz * 1000
+    const noise_rms_g = (spec.noise_floor_ug_rthz * 1e-6) * Math.sqrt(bw)
+    const snr_dB = a_g > 0 ? 20 * Math.log10(a_g / noise_rms_g) : 0
+
+    return {
+      spec,
+      accel_ms2,
+      accel_g: parseFloat((accel_ms2 / 9.81).toFixed(4)),
+      output_mV: parseFloat(output_mV.toFixed(3)),
+      output_V: parseFloat((spec.bias_voltage_V + output_mV / 1000).toFixed(4)),
+      saturation_pct: parseFloat(saturation_pct.toFixed(1)),
+      in_range,
+      snr_dB: parseFloat(Math.max(0, snr_dB).toFixed(1)),
+      charge_pC: parseFloat(charge_pC.toFixed(3)),
+    }
+  })
+}

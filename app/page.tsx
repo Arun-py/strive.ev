@@ -48,7 +48,7 @@ function SystemDiagram() {
     { id: 'h', label: 'Energy Harvesting', sub: 'Rectifier \u2192 DC\u2013DC',               color: '#FF7A00' },
     { id: 's', label: 'Supercapacitor',    sub: 'Buffer 0.5\u20132.1 mJ/cycle',               color: '#FFD600' },
     { id: 'b', label: 'Battery',           sub: '3S LiPo, 9.6\u201312.6 V',                  color: '#00FFA6' },
-    { id: 'i', label: 'IoT Monitoring',    sub: 'ESP32 \u2192 MongoDB \u2192 Dashboard',     color: '#AA44FF' },
+    { id: 'i', label: 'IoT Telemetry',    sub: 'ESP32 \u2192 MongoDB \u2192 Dashboard',     color: '#AA44FF' },
   ]
   const [active, setActive] = useState(0)
   useEffect(() => {
@@ -269,7 +269,7 @@ export default function HomePage() {
               content: 'Electric vehicles continuously generate mechanical vibrations in suspension systems, chassis, and motor mounts (5\u2013500\u202fHz, 100\u20131000\u202fN). This vibrational energy is wasted as heat through dampers. STRIVE-EV proposes converting this energy through PZT piezoelectric transducers while simultaneously extracting structural health data.' },
             { icon: '\u26a1', title: 'Piezoelectric Harvesting', color: '#FF7A00',
               content: 'Using the direct piezoelectric effect: Q = d\u2083\u2083 \u00d7 F. PZT ceramics generate 0.5\u201320\u202fV output under vehicle forces. Theoretical output ~2.84\u202fW (Wang et al.), with experimental validation at 0.33\u202fV under typical road conditions.' },
-            { icon: '🏗️', title: 'Structural Monitoring', color: '#0099FF',
+            { icon: '🏗️', title: 'Structural Diagnostics', color: '#0099FF',
               content: 'Vibration-based damage detection uses natural frequency shifts: f = (1/2\u03c0)\u221a(k/m). A chassis crack reduces stiffness k by 28\u202f%, shifting the natural frequency from 15\u202fHz to 12.7\u202fHz \u2014 detectable by the onboard SHM system using GMM + Autoencoder (Omidi, 2023).' },
           ].map((item, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
@@ -294,7 +294,7 @@ export default function HomePage() {
             'Design a piezoelectric energy harvesting system that converts vehicle vibrations (5\u2013500\u202fHz) into electrical energy using PZT transducers (d\u2083\u2083 = 580\u202fpC/N)',
             'Develop a charge-to-voltage converter circuit \u2014 compatible with IEPE standard, high sensitivity, low noise',
             'Implement dual-path architecture: simultaneous energy harvesting + structural signal extraction from the same PZT element',
-            'Develop real-time structural health monitoring using vibration-based frequency shift analysis (SHM Level 1\u20133)',
+            'Develop real-time structural health diagnostics using vibration-based frequency shift analysis (SHM Level 1–3)',
             'Deploy an IoT pipeline: ESP32 \u2192 MongoDB Atlas \u2192 WebSocket \u2192 Dashboard for real-time EV rover telemetry',
           ].map((obj, i) => (
             <motion.div key={i} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
@@ -363,7 +363,7 @@ export default function HomePage() {
           Sense &bull; Harvest &bull; Protect.
         </div>
         <div className="text-[#304050] text-[10px] font-inter">
-          Piezoelectric Energy Harvesting &amp; Structural Health Monitoring for Electric Vehicles
+          Piezoelectric Energy Harvesting &amp; Structural Health Analysis for Electric Vehicles
         </div>
         <div className="mt-3 flex justify-center flex-wrap gap-4 text-[#2A3840] text-[10px] font-inter">
           <span>PT Lab &#xa9; 2024&#x2013;2026</span>

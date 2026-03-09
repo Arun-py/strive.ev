@@ -5,7 +5,7 @@ import ParticleBackground from '@/components/ParticleBackground'
 
 export const metadata: Metadata = {
   title: 'STRIVE-EV | Sense • Harvest • Protect.',
-  description: 'Structural Intelligence & Vibration Energy System for Electric Vehicles — Piezoelectric Energy Harvesting & Structural Health Monitoring',
+  description: 'Structural Intelligence & Vibration Energy System for Electric Vehicles — Piezoelectric Energy Harvesting & Structural Health Diagnostics',
   icons: {
     icon: '/favicon.ico',
   },

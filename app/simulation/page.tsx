@@ -109,7 +109,7 @@ function MetricCard({
     <div className="glass-card p-3">
       <div className="flex items-center gap-2 mb-2">
         <span className="text-lg">{icon}</span>
-        <span className="text-[#506070] text-[9px] heading-orbitron tracking-widest uppercase flex-1">{label}</span>
+        <span className="lm-label text-[#506070] text-[9px] heading-orbitron tracking-widest uppercase flex-1">{label}</span>
         {delta !== undefined && (
           <span className={`text-[9px] font-mono ${delta > 0 ? 'text-[#FF3B3B]' : 'text-[#00FFA6]'}`}>
             {delta > 0 ? '▲' : '▼'} {Math.abs(delta).toFixed(2)}
@@ -124,7 +124,7 @@ function MetricCard({
           className="heading-orbitron text-lg font-bold"
           style={{ color }}
         >
-          {value} <span className="text-[10px] text-[#405060] font-normal">{unit}</span>
+          {value} <span className="lm-dimtext text-[10px] text-[#405060] font-normal">{unit}</span>
         </motion.div>
       </AnimatePresence>
     </div>
@@ -138,6 +138,8 @@ export default function SimulationPage() {
   const [freqSpectrum, setFreqSpectrum] = useState<number[]>([])
   const [isRunning, setIsRunning] = useState(true)
   const [isClient, setIsClient] = useState(false)
+  const [liteMode, setLiteMode] = useState(false)
+  const [wavePhase, setWavePhase] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [ChartsComponent, setChartsComponent] = useState<typeof import('@/components/Charts') | null>(null)
 
@@ -154,6 +156,7 @@ export default function SimulationPage() {
       return next.length > MAX_HISTORY ? next.slice(-MAX_HISTORY) : next
     })
     setFreqSpectrum(generateFrequencySpectrum(condition))
+    setWavePhase(prev => prev + 0.25)
   }, [condition])
 
   useEffect(() => {
@@ -178,9 +181,11 @@ export default function SimulationPage() {
   const freqLabels = Array.from({ length: 64 }, (_, i) => `${((i / 64) * 200).toFixed(0)}`)
 
   const condDesc = condition ? conditionDescriptions[condition] : null
+  const lm = liteMode
 
   return (
-    <div className="min-h-screen pt-20 pb-12 px-4">
+    <div className={`min-h-screen pt-20 pb-12 px-4 transition-colors duration-300 ${lm ? 'light-mode' : ''}`}
+      style={{ background: lm ? '#F1F5F9' : undefined }}>
       {/* Header */}
       <div className="max-w-screen-xl mx-auto">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
@@ -193,11 +198,23 @@ export default function SimulationPage() {
                 {isRunning ? 'SIMULATION RUNNING' : 'SIMULATION PAUSED'}
               </span>
             </div>
-            <h1 className="heading-orbitron text-xl font-bold text-white">SIMULATION DASHBOARD</h1>
-            <div className="text-[#506070] text-xs font-inter">simulation@strive.ev · Physics-based EV vibration model</div>
+            <h1 className="heading-orbitron text-xl font-bold" style={{ color: lm ? '#0F172A' : 'white' }}>SIMULATION DASHBOARD</h1>
+            <div className="text-xs font-inter" style={{ color: lm ? '#64748B' : '#506070' }}>simulation@strive.ev · Physics-based EV vibration model</div>
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setLiteMode(prev => !prev)}
+              className="px-5 py-2 rounded-lg heading-orbitron text-xs tracking-widest transition-all"
+              style={{
+                background: lm ? '#FFFFFF' : 'rgba(13,35,71,0.5)',
+                border: lm ? '1px solid #CBD5E1' : '1px solid #1A3A5C',
+                color: lm ? '#2563EB' : '#6080A0',
+                boxShadow: lm ? '0 1px 4px rgba(15,23,42,0.08)' : 'none',
+              }}
+            >
+              {lm ? '🌙 DARK MODE' : '☀️ LIGHT MODE'}
+            </button>
             <button
               onClick={togglePause}
               className="px-5 py-2 rounded-lg heading-orbitron text-xs tracking-widest transition-all"
@@ -224,10 +241,10 @@ export default function SimulationPage() {
                 condition === c.value ? 'font-bold' : 'opacity-60'
               }`}
               style={{
-                background: condition === c.value ? `${c.color}20` : 'rgba(13,35,71,0.5)',
-                border: `1px solid ${condition === c.value ? c.color + '60' : '#1A3A5C'}`,
-                color: condition === c.value ? c.color : '#6080A0',
-                boxShadow: condition === c.value ? `0 0 12px ${c.color}25` : 'none'
+                background: condition === c.value ? `${c.color}18` : (lm ? '#FFFFFF' : 'rgba(13,35,71,0.5)'),
+                border: `1px solid ${condition === c.value ? c.color + '60' : (lm ? '#CBD5E1' : '#1A3A5C')}`,
+                color: condition === c.value ? c.color : (lm ? '#64748B' : '#6080A0'),
+                boxShadow: condition === c.value ? `0 0 12px ${c.color}25` : (lm ? '0 1px 3px rgba(15,23,42,0.06)' : 'none'),
               }}
             >
               {c.label.toUpperCase()}
@@ -243,11 +260,15 @@ export default function SimulationPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className={`p-4 rounded-lg mb-6 ${
-                condDesc.severity === 'critical' ? 'bg-[#FF3B3B08] border border-[#FF3B3B30]' :
-                condDesc.severity === 'warning' ? 'bg-[#FFD60008] border border-[#FFD60030]' :
-                'bg-[#00FFA608] border border-[#00FFA630]'
-              }`}
+              className="p-4 rounded-lg mb-6"
+              style={{
+                background: condDesc.severity === 'critical' ? (lm ? '#FEF2F2' : 'rgba(255,59,59,0.03)') :
+                            condDesc.severity === 'warning'  ? (lm ? '#FFFBEB' : 'rgba(255,214,0,0.03)') :
+                                                               (lm ? '#F0FDF4' : 'rgba(0,255,166,0.03)'),
+                border: `1px solid ${condDesc.severity === 'critical' ? (lm ? '#FECACA' : '#FF3B3B30') :
+                                     condDesc.severity === 'warning'  ? (lm ? '#FDE68A' : '#FFD60030') :
+                                                                         (lm ? '#BBF7D0' : '#00FFA630')}`,
+              }}
             >
               <div className="flex items-start gap-3">
                 <div className={`text-sm font-bold heading-orbitron ${
@@ -256,11 +277,11 @@ export default function SimulationPage() {
                 }`}>
                   {condDesc.severity === 'critical' ? '🔴' : condDesc.severity === 'warning' ? '⚠' : 'ℹ'} {condDesc.title}
                 </div>
-                <div className="text-[#6080A0] text-xs font-inter flex-1">{condDesc.description}</div>
+                <div className="text-xs font-inter flex-1" style={{ color: lm ? '#475569' : '#6080A0' }}>{condDesc.description}</div>
               </div>
               <div className="mt-3 flex flex-wrap gap-3">
                 {condDesc.indicators.map((ind, i) => (
-                  <span key={i} className="text-[10px] font-mono text-[#506070]">{ind}</span>
+                  <span key={i} className="text-[10px] font-mono" style={{ color: lm ? '#64748B' : '#506070' }}>{ind}</span>
                 ))}
               </div>
               <div className="mt-2 text-xs font-inter" style={{
@@ -293,11 +314,15 @@ export default function SimulationPage() {
 
         {/* Health status */}
         {data && (
-          <div className={`p-3 rounded-lg flex flex-wrap items-center gap-4 mb-6 ${
-            data.health_status === 'NORMAL' ? 'bg-[#00FFA606] border border-[#00FFA620]' :
-            data.health_status === 'WARNING' ? 'bg-[#FFD60006] border border-[#FFD60020]' :
-            'bg-[#FF3B3B06] border border-[#FF3B3B20]'
-          }`}>
+          <div className="p-3 rounded-lg flex flex-wrap items-center gap-4 mb-6"
+            style={{
+              background: data.health_status === 'NORMAL' ? (lm ? '#F0FDF4' : 'rgba(0,255,166,0.025)') :
+                          data.health_status === 'WARNING' ? (lm ? '#FFFBEB' : 'rgba(255,214,0,0.025)') :
+                                                             (lm ? '#FEF2F2' : 'rgba(255,59,59,0.025)'),
+              border: `1px solid ${data.health_status === 'NORMAL' ? (lm ? '#BBF7D0' : '#00FFA620') :
+                                   data.health_status === 'WARNING' ? (lm ? '#FDE68A' : '#FFD60020') :
+                                                                       (lm ? '#FECACA' : '#FF3B3B20')}`,
+            }}>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full animate-pulse" style={{
                 background: data.health_status === 'NORMAL' ? '#00FFA6' : data.health_status === 'WARNING' ? '#FFD600' : '#FF3B3B',
@@ -309,11 +334,11 @@ export default function SimulationPage() {
                 {data.health_status}
               </span>
             </div>
-            <div className="text-[10px] font-inter text-[#6080A0]">{data.motor_health}</div>
-            <div className="text-[10px] font-inter text-[#6080A0]">{data.suspension_health}</div>
-            <div className="text-[10px] font-inter text-[#6080A0]">{data.chassis_health}</div>
-            <div className="text-[10px] font-inter text-[#6080A0]">{data.battery_health}</div>
-            <div className="text-[10px] font-inter text-[#6080A0]">{data.energy_status}</div>
+            <div className="text-[10px] font-inter" style={{ color: lm ? '#475569' : '#6080A0' }}>{data.motor_health}</div>
+            <div className="text-[10px] font-inter" style={{ color: lm ? '#475569' : '#6080A0' }}>{data.suspension_health}</div>
+            <div className="text-[10px] font-inter" style={{ color: lm ? '#475569' : '#6080A0' }}>{data.chassis_health}</div>
+            <div className="text-[10px] font-inter" style={{ color: lm ? '#475569' : '#6080A0' }}>{data.battery_health}</div>
+            <div className="text-[10px] font-inter" style={{ color: lm ? '#475569' : '#6080A0' }}>{data.energy_status}</div>
           </div>
         )}
 
@@ -325,11 +350,12 @@ export default function SimulationPage() {
               <ChartsComponent.VibrationChart
                 labels={timeLabels}
                 datasets={[
-                  { label: 'V1-Motor', data: history.map(d => d.vibration1), color: '#00FFA6' },
-                  { label: 'V2-Chassis', data: history.map(d => d.vibration2), color: '#0099FF' },
-                  { label: 'V3-Susp', data: history.map(d => d.vibration3), color: '#FFD600' },
-                  { label: 'V4-Batt', data: history.map(d => d.vibration4), color: '#FF7A00' },
+                  { label: 'V1-Motor',   data: history.map(d => d.vibration1), color: lm ? '#059669' : '#00FFA6' },
+                  { label: 'V2-Chassis', data: history.map(d => d.vibration2), color: lm ? '#2563EB' : '#0099FF' },
+                  { label: 'V3-Susp',   data: history.map(d => d.vibration3), color: lm ? '#D97706' : '#FFD600' },
+                  { label: 'V4-Batt',   data: history.map(d => d.vibration4), color: lm ? '#C2410C' : '#FF7A00' },
                 ]}
+                lightMode={lm}
               />
             </div>
 
@@ -338,7 +364,8 @@ export default function SimulationPage() {
               <ChartsComponent.FrequencyChart
                 labels={freqLabels}
                 data={freqSpectrum}
-                color="#FF7A00"
+                color={lm ? '#EA580C' : '#FF7A00'}
+                lightMode={lm}
               />
             </div>
 
@@ -348,10 +375,11 @@ export default function SimulationPage() {
                 title="PIEZO VOLTAGE OUTPUT"
                 labels={timeLabels}
                 data={history.map(d => d.piezo_voltage)}
-                color="#AA44FF"
+                color={lm ? '#7C3AED' : '#AA44FF'}
                 unit="V"
                 yMin={0}
                 yMax={20}
+                lightMode={lm}
               />
             </div>
 
@@ -361,9 +389,10 @@ export default function SimulationPage() {
                 title="ENERGY HARVESTED"
                 labels={timeLabels}
                 data={history.map(d => d.energy_harvested)}
-                color="#00FFA6"
+                color={lm ? '#059669' : '#00FFA6'}
                 unit="mJ"
                 yMin={0}
+                lightMode={lm}
               />
             </div>
 
@@ -373,27 +402,29 @@ export default function SimulationPage() {
                 title="STRUCTURAL INTEGRITY"
                 labels={timeLabels}
                 data={history.map(d => d.structural_integrity)}
-                color={data?.structural_integrity && data.structural_integrity < 65 ? '#FF3B3B' :
-                       data?.structural_integrity && data.structural_integrity < 80 ? '#FFD600' : '#00FFA6'}
+                color={data?.structural_integrity && data.structural_integrity < 65 ? '#DC2626' :
+                       data?.structural_integrity && data.structural_integrity < 80 ? '#D97706' :
+                       (lm ? '#059669' : '#00FFA6')}
                 unit="%"
                 yMin={0}
                 yMax={100}
+                lightMode={lm}
               />
             </div>
           </div>
         )}
 
         {/* Chassis heat map */}
-        {data && (
+        {data && !liteMode && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="dashboard-panel p-4">
-              <div className="heading-orbitron text-[#00FFA6] text-[10px] tracking-widest mb-3">
+              <div className="heading-orbitron text-[10px] tracking-widest mb-3" style={{ color: lm ? '#059669' : '#00FFA6' }}>
                 EV CHASSIS STRUCTURAL HEALTH MAP
               </div>
               <ChassisHeatmap data={data} />
               <div className="flex gap-3 mt-3">
                 {[['#00FFA6', '< 40 MPa SAFE'], ['#FFD600', '40-70 MPa CAUTION'], ['#FF3B3B', '> 70 MPa CRITICAL']].map(([c, l]) => (
-                  <div key={l} className="flex items-center gap-1.5 text-[9px] font-inter text-[#6080A0]">
+                  <div key={l} className="flex items-center gap-1.5 text-[9px] font-inter" style={{ color: lm ? '#64748B' : '#6080A0' }}>
                     <div className="w-2 h-2 rounded-full" style={{ background: c }} />
                     {l}
                   </div>
@@ -404,14 +435,14 @@ export default function SimulationPage() {
             {/* Fault details panel */}
             {data && (
               <div className="dashboard-panel p-4">
-                <div className="heading-orbitron text-[#FF7A00] text-[10px] tracking-widest mb-3">
+                <div className="heading-orbitron text-[10px] tracking-widest mb-3" style={{ color: lm ? '#B45309' : '#FF7A00' }}>
                   FAULT FLAG STATUS
                 </div>
                 <div className="space-y-2">
                   {Object.entries(data.fault_flags).map(([flag, active]) => (
                     <div key={flag} className="flex items-center justify-between p-2 rounded"
-                      style={{ background: active ? 'rgba(255,59,59,0.06)' : 'rgba(0,255,166,0.03)' }}>
-                      <span className="text-[10px] font-mono text-[#6080A0] uppercase tracking-wider">
+                      style={{ background: active ? (lm ? '#FEE2E2' : 'rgba(255,59,59,0.06)') : (lm ? '#F0FDF4' : 'rgba(0,255,166,0.03)') }}>
+                      <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: lm ? '#475569' : '#6080A0' }}>
                         {flag.replace(/_/g, ' ')}
                       </span>
                       <div className={`flex items-center gap-1.5 heading-orbitron text-[9px] font-bold ${active ? 'text-[#FF3B3B]' : 'text-[#00FFA6]'}`}>
@@ -426,12 +457,97 @@ export default function SimulationPage() {
           </div>
         )}
 
+        {/* ── Piezoelectric Characteristic Graphs ─────────────────────────── */}
+        {isClient && ChartsComponent && (
+          <div className="mb-6">
+            <div className="heading-orbitron text-[10px] tracking-widest mb-3" style={{ color: lm ? '#7C3AED' : '#AA44FF' }}>
+              PIEZOELECTRIC CIRCUIT ANALYSIS
+            </div>
+
+            {/* Lite mode quick stats bar */}
+            {liteMode && data && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <MetricCard label="Piezo V" value={data.piezo_voltage.toFixed(2)} unit="V" color="#AA44FF" icon="⚡"/>
+                <MetricCard label="Energy" value={data.energy_harvested.toFixed(3)} unit="mJ" color="#00FFA6" icon="💡"/>
+                <MetricCard label="Motor Freq" value={data.motor_freq.toFixed(1)} unit="Hz" color="#FF7A00" icon="📡"/>
+                <MetricCard label="Speed" value={data.speed.toFixed(0)} unit="km/h" color="#0099FF" icon="🚗"/>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {/* 1. Voltage vs Frequency */}
+              <div className="chart-container" style={{ height: 220 }}>
+                <ChartsComponent.VoltageFrequencyChart
+                  resonanceHz={condition === 'CHASSIS_CRACK' ? 68 : condition === 'MOTOR_IMBALANCE' ? 74 : 82}
+                  lightMode={lm}
+                />
+              </div>
+
+              {/* 2. Power vs Load Resistance */}
+              <div className="chart-container" style={{ height: 220 }}>
+                <ChartsComponent.PowerLoadChart lightMode={lm} />
+              </div>
+
+              {/* 3. Output Voltage Waveform */}
+              <div className="chart-container" style={{ height: 220 }}>
+                <ChartsComponent.OutputWaveformChart phase={wavePhase} lightMode={lm} />
+              </div>
+
+              {/* 4. Noise Spectral Density */}
+              <div className="chart-container" style={{ height: 220 }}>
+                <ChartsComponent.NoiseSpectralDensityChart lightMode={lm} />
+              </div>
+
+              {/* 5. Charge Amplifier Output */}
+              <div className="chart-container" style={{ height: 220 }}>
+                <ChartsComponent.ChargeAmplifierChart phase={wavePhase * 1.1} lightMode={lm} />
+              </div>
+
+              {/* Lite-mode: compact energy chart */}
+              {liteMode && history.length > 2 && (
+                <div className="chart-container" style={{ height: 220 }}>
+                  <ChartsComponent.SingleLineChart
+                    title="ENERGY HARVESTED (LIVE)"
+                    labels={history.map((_, i) => `${(i * 0.5).toFixed(1)}s`)}
+                    data={history.map(d => d.energy_harvested)}
+                    color={lm ? '#059669' : '#00FFA6'}
+                    unit="mJ"
+                    yMin={0}
+                    lightMode={lm}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Graph descriptions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-2 mt-3">
+              {[
+                { title: 'Voltage vs Freq', desc: 'Max voltage at mechanical resonance frequency',           dark: '#AA44FF', light: '#7C3AED' },
+                { title: 'Power vs Load R', desc: 'Impedance matching — peak power near 610 kΩ',           dark: '#FFD600', light: '#D97706' },
+                { title: 'VDBC Waveform',   desc: 'Rectified & boosted output vs raw AC input',            dark: '#00FFA6', light: '#059669' },
+                { title: 'Noise Density',   desc: 'Frequency-dependent noise profile of signal conditioner', dark: '#FF7A00', light: '#C2410C' },
+                { title: 'Charge Amp Out',  desc: 'Analog voltage signal from piezo after conditioning',   dark: '#FF3B3B', light: '#DC2626' },
+              ].map(({ title, desc, dark, light }) => {
+                const c = lm ? light : dark
+                return (
+                  <div key={title} className="p-2 rounded"
+                    style={{ background: lm ? '#FFFFFF' : `${dark}08`, border: `1px solid ${lm ? '#E2E8F0' : dark + '20'}`,
+                             boxShadow: lm ? '0 1px 3px rgba(15,23,42,0.05)' : 'none' }}>
+                    <div className="heading-orbitron text-[9px] mb-1" style={{ color: c }}>{title}</div>
+                    <div className="text-[9px] font-inter" style={{ color: lm ? '#475569' : '#405060' }}>{desc}</div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Research references */}
         <div className="dashboard-panel p-4">
-          <div className="heading-orbitron text-[#6080A0] text-[10px] tracking-widest mb-3">
+          <div className="heading-orbitron text-[10px] tracking-widest mb-3" style={{ color: lm ? '#94A3B8' : '#6080A0' }}>
             SIMULATION MODEL REFERENCES
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[10px] font-inter text-[#405060]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[10px] font-inter" style={{ color: lm ? '#64748B' : '#405060' }}>
             {[
               'Wang et al. (2015): Suspension force 100–1000 N → V = 0.5–20V | PZT d33 = 580 pC/N',
               'Al-Yafeai et al. (2020): Half-car model +77% voltage, +57% power improvement',
@@ -441,7 +557,7 @@ export default function SimulationPage() {
               'ISRO IPRC (2024): IEPE-compatible charge-to-voltage converter (RES-IPRC-2024-002)',
             ].map((ref, i) => (
               <div key={i} className="flex items-start gap-2">
-                <span className="text-[#00FFA640]">•</span>
+                <span style={{ color: lm ? '#CBD5E1' : '#00FFA640' }}>•</span>
                 <span>{ref}</span>
               </div>
             ))}

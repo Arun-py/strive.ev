@@ -8,7 +8,7 @@
 
 ## Overview
 
-STRIVE-EV is a full-stack research dashboard for real-time piezoelectric energy harvesting and structural health monitoring of electric vehicles. It integrates physics-accurate simulation with live IoT telemetry from ESP32 hardware.
+STRIVE-EV is a full-stack research dashboard for real-time piezoelectric energy harvesting and structural health diagnostics of electric vehicles. It integrates physics-accurate simulation with live IoT telemetry from ESP32 hardware.
 
 ## Pages
 

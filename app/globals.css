@@ -269,3 +269,56 @@ body {
   background: rgba(255, 214, 0, 0.25);
   box-shadow: 0 0 15px rgba(255, 214, 0, 0.3);
 }
+
+/* ─── Light / Professional Mode ─────────────────────────────────────────── */
+.light-mode {
+  background: #F1F5F9 !important;
+  color: #0F172A;
+}
+
+.light-mode .glass-card {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 1px 6px rgba(15,23,42,0.07) !important;
+}
+
+.light-mode .glass-card-orange {
+  background: #FFFFFF !important;
+  border: 1px solid #FED7AA !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 1px 6px rgba(15,23,42,0.07) !important;
+}
+
+.light-mode .chart-container {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 1px 4px rgba(15,23,42,0.05) !important;
+}
+
+.light-mode .dashboard-panel {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: 0 1px 8px rgba(15,23,42,0.06) !important;
+}
+
+.light-mode ::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+.light-mode ::-webkit-scrollbar-thumb {
+  background: #94A3B8;
+}
+
+/* Light mode metric-card label overrides */
+.light-mode .lm-label  { color: #64748B !important; }
+.light-mode .lm-subtext { color: #475569 !important; }
+.light-mode .lm-dimtext { color: #94A3B8 !important; }
+.light-mode .lm-title   { color: #1E293B !important; }
+.light-mode .lm-border  { border-color: #E2E8F0 !important; }
+.light-mode .lm-bg      { background: #F8FAFC !important; }
+.light-mode .lm-badge   {
+  background: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+  color: #475569 !important;
+}
