@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: strive-ev-backend
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+    plan: free
