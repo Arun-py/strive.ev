@@ -20,6 +20,10 @@ server/node_modules/
 .env.local
 .env.*.local
 
+# Local secrets (Render API key etc — never commit)
+../.secrets
+.secrets
+
 # Vercel
 .vercel
 
