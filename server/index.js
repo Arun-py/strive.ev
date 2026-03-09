@@ -3,7 +3,7 @@ const http = require('http')
 const WebSocket = require('ws')
 const cors = require('cors')
 const mongoose = require('mongoose')
-require('dotenv').config({ path: '../.env.local' })
+require('dotenv').config()
 
 const app = express()
 const server = http.createServer(app)
