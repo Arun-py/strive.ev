@@ -492,6 +492,44 @@ export default function Car1Dashboard() {
     return () => clearInterval(id);
   }, []);
 
+  // MongoDB live fetch — polls REST API when WebSocket is offline
+  // Keeps history fresh even when backend reconnects
+  useEffect(() => {
+    if (wsConnected) return;   // WS takes priority
+    const poll = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/car1/latest?limit=5');
+        if (!res.ok) return;
+        const json: { data?: ESP32Data[] } = await res.json();
+        const rows = json.data ?? (json as unknown as ESP32Data[]);
+        if (Array.isArray(rows) && rows.length > 0) {
+          const latest = rows[rows.length - 1] as ESP32Data;
+          // Only use fetched data when we have all required fields
+          if (latest.vibration1 !== undefined) {
+            const d = injectFault({
+              time:             latest.time ?? new Date().toISOString(),
+              vibration1:       Number(latest.vibration1) || 0,
+              vibration2:       Number(latest.vibration2) || 0,
+              vibration3:       Number(latest.vibration3) || 0,
+              vibration4:       Number(latest.vibration4) || 0,
+              temperature:      Number(latest.temperature) || 28,
+              humidity:         Number(latest.humidity) || 55,
+              distance:         Number(latest.distance) || 50,
+              battery_voltage:  Number(latest.battery_voltage) || battRef.current,
+              piezo_energy:     Number(latest.piezo_energy) || 0,
+            }, activeFault);
+            processNewData(d);
+          }
+        }
+      } catch {
+        // silently ignore — simulation continues as fallback
+      }
+    };
+    const id = setInterval(poll, 2000);
+    poll();  // immediate first fetch
+    return () => clearInterval(id);
+  }, [wsConnected, activeFault, processNewData]);
+
   const formatUptime = (s: number) => {
     const h = Math.floor(s / 3600).toString().padStart(2, '0');
     const m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
