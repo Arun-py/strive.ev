@@ -194,7 +194,7 @@ float computePiezoEnergy(float v1, float v2, float v3, float v4) {
 void setup() {
   Serial.begin(115200);
   Serial.println("\n╔═══════════════════════════╗");
-  Serial.println("║  STRIVE-EV ESP32 v2.0     ║");
+  Serial.println("║  STRIVE-EV                ║");
   Serial.println("╚═══════════════════════════╝");
 
   // ── Motor pins ──
